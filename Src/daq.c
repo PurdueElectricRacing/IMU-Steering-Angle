@@ -85,7 +85,7 @@ DAQ_Status_TypeDef daq_send_adc_data(DAQ_TypeDef *daq)
 {
 
 	uint32_t mailbox;
-	uint8_t data[7];
+	uint8_t data[4];
 	uint32_t temp_tick = uwTick;
 
 	daq->tick = temp_tick;
@@ -94,7 +94,7 @@ DAQ_Status_TypeDef daq_send_adc_data(DAQ_TypeDef *daq)
 	header.StdId = ADC_ADDR;
 	header.IDE= CAN_ID_STD;
 	header.RTR = CAN_RTR_DATA;
-	header.DLC = 7;
+	header.DLC = 4;
 	header.TransmitGlobalTime = DISABLE;
 
 	data[3] = (uint8_t) (daq->adc >> 24);
@@ -102,9 +102,9 @@ DAQ_Status_TypeDef daq_send_adc_data(DAQ_TypeDef *daq)
 	data[1] = (uint8_t) (daq->adc >> 8);
 	data[0] = (uint8_t) (daq->adc);
 
-	data[6] = (uint8_t) (temp_tick >> 16);
-	data[5] = (uint8_t) (temp_tick >> 8);
-	data[4] = (uint8_t) (temp_tick);
+//	data[6] = (uint8_t) (temp_tick >> 16);
+//	data[5] = (uint8_t) (temp_tick >> 8);
+//	data[4] = (uint8_t) (temp_tick);
 
 	while (HAL_CAN_GetTxMailboxesFreeLevel(daq->hcan) == 0); // while mailboxes not free
 

@@ -92,7 +92,7 @@ float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out = 0;
   * @retval None
   */
 int main(void)
-{
+	{
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -167,8 +167,8 @@ int main(void)
 			  HAL_Delay(2000);
 		  }
 	  }
-	  HAL_Delay(10);
-	  for (uint8_t i = 0; i < 7; i++)
+	  HAL_Delay(8);
+	  for (uint8_t i = 0; i < 6; i++)
 	  {
 		  if (daq_send_imu_data(&daq, i) != DAQ_OK)
 		  {
@@ -183,8 +183,9 @@ int main(void)
 				  HAL_Delay(2000);
 			  }
 		  }
-		  daq_send_adc_data(&daq);
 	  }
+	  HAL_Delay(2);
+	  daq_send_adc_data(&daq);
 
 
 //	  accel.x_accel = ( (int16_t) accel.accel_x_high << 8 ) | ( (int16_t) accel.accel_x_low ) ;
