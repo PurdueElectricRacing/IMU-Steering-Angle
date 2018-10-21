@@ -91,8 +91,7 @@ float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out = 0;
   *
   * @retval None
   */
-int main(void)
-	{
+int main(void) {
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -153,7 +152,6 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-//	  if ( read_accel(&hi2c1) != HAL_OK || read_gyro(&hi2c1) != HAL_OK || HAL_ADC_PollForConversion(&hadc1, 1000) != HAL_OK)
 	  if (daq_read_data(&daq) != DAQ_OK)
 	  {
 		  while (1)
@@ -168,7 +166,7 @@ int main(void)
 		  }
 	  }
 	  HAL_Delay(8);
-	  for (uint8_t i = 0; i < 6; i++)
+	  for (uint8_t i = 0; i < 2; i++)
 	  {
 		  if (daq_send_imu_data(&daq, i) != DAQ_OK)
 		  {

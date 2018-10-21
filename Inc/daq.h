@@ -38,12 +38,8 @@ typedef enum
 
 typedef enum
 {
-	ACCEL_X = 0,
-	ACCEL_Y = 1,
-	ACCEL_Z = 2,
-	GYRO_X 	= 3,
-	GYRO_Y 	= 4,
-	GYRO_Z 	= 5,
+	ACCEL = 0,
+	GYRO = 1
 }IMU_Data_TypeDef;
 
 

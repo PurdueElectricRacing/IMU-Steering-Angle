@@ -102,10 +102,6 @@ DAQ_Status_TypeDef daq_send_adc_data(DAQ_TypeDef *daq)
 	data[1] = (uint8_t) (daq->adc >> 8);
 	data[0] = (uint8_t) (daq->adc);
 
-//	data[6] = (uint8_t) (temp_tick >> 16);
-//	data[5] = (uint8_t) (temp_tick >> 8);
-//	data[4] = (uint8_t) (temp_tick);
-
 	while (HAL_CAN_GetTxMailboxesFreeLevel(daq->hcan) == 0); // while mailboxes not free
 
 	if ( HAL_CAN_AddTxMessage(daq->hcan, &header, data, &mailbox) != HAL_OK)
@@ -135,42 +131,24 @@ DAQ_Status_TypeDef daq_send_imu_data(DAQ_TypeDef *daq, IMU_Data_TypeDef data_typ
 	data[0] = data_type;
 
 	//determine which data values to get based on the data type
-	switch (data_type)
-	{
-	case (ACCEL_X):
+	switch (data_type) {
+		case (ACCEL):
 			data[1] = accel.accel_x_high;
 			data[2] = accel.accel_x_low;
+			data[3] = accel.accel_y_high;
+			data[4] = accel.accel_y_low;
+			data[5] = accel.accel_z_high;
+			data[6] = accel.accel_z_low;
 			break;
-	case (ACCEL_Y):
-			data[1] = accel.accel_y_high;
-			data[2] = accel.accel_y_low;
-			break;
-	case (ACCEL_Z):
-			data[1] = accel.accel_z_high;
-			data[2] = accel.accel_z_low;
-			break;
-	case (GYRO_X):
+		case (GYRO):
 			data[1] = gyro.gyro_x_high;
 			data[2] = gyro.gyro_x_low;
-			break;
-	case (GYRO_Y):
-			data[1] = gyro.gyro_y_high;
-			data[2] = gyro.gyro_y_low;
-			break;
-	case (GYRO_Z):
-			data[1] = gyro.gyro_z_high;
-			data[2] = gyro.gyro_z_low;
+			data[3] = gyro.gyro_y_high;
+			data[4] = gyro.gyro_y_low;
+			data[5] = gyro.gyro_z_high;
+			data[6] = gyro.gyro_z_low;
 			break;
 	}
-
-	//temp variable to "snapshot" the current tick
-	uint32_t temp_tick = uwTick;
-	daq->tick = temp_tick;
-
-	//parse the tick into 3 bytes, big endian
-	data [5] = (uint8_t) temp_tick;
-	data [4] = (uint8_t) (temp_tick >> 8);
-	data [3] = (uint8_t) (temp_tick >> 16);
 
 	while (HAL_CAN_GetTxMailboxesFreeLevel(daq->hcan) == 0); // while mailboxes not free
 

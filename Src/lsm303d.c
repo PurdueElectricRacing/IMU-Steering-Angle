@@ -120,10 +120,6 @@ static HAL_StatusTypeDef read_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, ui
 		return status;
 	}
 
-
-
-
-
 	return HAL_OK;
 }
 
