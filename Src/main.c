@@ -165,7 +165,7 @@ int main(void) {
 			  HAL_Delay(2000);
 		  }
 	  }
-	  HAL_Delay(8);
+	  HAL_Delay(10);
 	  for (uint8_t i = 0; i < 2; i++)
 	  {
 		  if (daq_send_imu_data(&daq, i) != DAQ_OK)
@@ -182,7 +182,6 @@ int main(void) {
 			  }
 		  }
 	  }
-	  HAL_Delay(2);
 	  daq_send_adc_data(&daq);
 
 
