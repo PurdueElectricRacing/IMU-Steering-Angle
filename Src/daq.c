@@ -124,7 +124,7 @@ DAQ_Status_TypeDef daq_send_imu_data(DAQ_TypeDef *daq, IMU_Data_TypeDef data_typ
 	header.StdId = IMU_ADDR;
 	header.IDE= CAN_ID_STD;
 	header.RTR = CAN_RTR_DATA;
-	header.DLC = 6;
+	header.DLC = 7;
 	header.TransmitGlobalTime = DISABLE;
 
 
