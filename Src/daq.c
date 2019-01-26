@@ -65,7 +65,7 @@ DAQ_Status_TypeDef daq_init(I2C_HandleTypeDef *hi2c, ADC_HandleTypeDef *hadc, CA
  *
  * @return HAL_StatusTypeDef: returns HAL_OK if no errors
  **/
-HAL_StatusTypeDef  daq_read_imu_reg(I2C_HandleTypeDef *hi2c, uint32_t dev_addr, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low)
+HAL_StatusTypeDef  daq_read_imu_reg(I2C_HandleTypeDef *hi2c, uint16_t dev_addr, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low)
 {
 
 	HAL_StatusTypeDef status;
