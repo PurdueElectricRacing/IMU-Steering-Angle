@@ -107,12 +107,11 @@ typedef struct L3GD20H_GYRO
 	uint8_t gyro_z_low;
 	uint8_t gyro_z_high;
 
+	uint8_t broke;
+
 	float sensitivity;
-//	GYRO_DATA_RATE data_rate;
-//	GYRO_FULL_SCALE full_scale;
 }L3GD20H_GYRO;
 
-L3GD20H_GYRO gyro;
 
 /*Initialize the gyroscope
  * I2C_HandleTypeDef *hi2c 		-- I2C pointer
@@ -120,7 +119,7 @@ L3GD20H_GYRO gyro;
  * GYRO_MEASUREMENT_RANGE range -- the full-scale range of the gyroscope, range: [245 degrees/sec, 2000 degrees/sec]
  * int high_pass_filter			-- enable high-pass filter, default 0 (disabled)*/
 
-static HAL_StatusTypeDef read_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low);
+static HAL_StatusTypeDef read_gyro_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low);
 
 //HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, L3GD20H_GYRO *gyro, GYRO_DATA_RATE data_rate, GYRO_FULL_SCALE full_scale, int high_pass_filter);
 HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, GYRO_FULL_SCALE full_scale, int high_pass_filter);

@@ -6,6 +6,8 @@
  */
 #include "l3gd20h.h"
 
+extern L3GD20H_GYRO g_gyro;
+
 HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, GYRO_FULL_SCALE full_scale, int high_pass_filter)
 {
 	HAL_StatusTypeDef status;
@@ -13,6 +15,7 @@ HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, G
 //	if the device is not ready return error
 	if ((status = HAL_I2C_IsDeviceReady(hi2c, L3GD20H_ADDR, 2, 100)) != HAL_OK)
 	{
+		g_gyro.broke = 1;
 		return status;
 	}
 
@@ -20,16 +23,16 @@ HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, G
 	switch (full_scale)
 	{
 		case (FS_245_DPS):
-			gyro.sensitivity = 8.75;
+			g_gyro.sensitivity = 8.75;
 			break;
 		case (FS_500_DPS):
-			gyro.sensitivity = 17.5;
+			g_gyro.sensitivity = 17.5;
 			break;
 		case(FS_2000_DPS):
-			gyro.sensitivity = 70.0;
+			g_gyro.sensitivity = 70.0;
 			break;
 	}
-	gyro.sensitivity = gyro.sensitivity / 1000;
+	g_gyro.sensitivity = g_gyro.sensitivity / 1000;
 
 
 	/*INIT CTRL1
@@ -53,6 +56,7 @@ HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, G
 
 	if ((status = HAL_I2C_Mem_Write(hi2c, L3GD20H_ADDR, L3GD20H_CTRL1, 1, &init, 1, 100)) != HAL_OK)
 	{
+		g_gyro.broke = 1;
 		return status;
 	}
 
@@ -72,6 +76,7 @@ HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, G
 
 	if ((status = HAL_I2C_Mem_Write(hi2c, L3GD20H_ADDR, L3GD20H_CTRL4, 1, &init, 1, 100)) != HAL_OK)
 	{
+		g_gyro.broke = 1;
 		return status;
 	}
 
@@ -89,10 +94,11 @@ HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, G
 		init = 0x01 << 4;
 		if ((status = HAL_I2C_Mem_Write(hi2c, L3GD20H_ADDR, L3GD20H_CTRL5, 1, &init, 1, 100)) != HAL_OK)
 			{
+				g_gyro.broke = 1;
 				return status;
 			}
 	}
-
+	g_gyro.broke = 0;
 	return HAL_OK;
 }
 
@@ -105,23 +111,23 @@ HAL_StatusTypeDef read_gyro(I2C_HandleTypeDef *hi2c)
 	HAL_StatusTypeDef status;
 
 	//read the X registers and write the raw values to the struct's x data point
-
-	if ((status = read_reg(hi2c, L3GD20H_OUT_X_H, L3GD20H_OUT_X_L, &gyro.gyro_x_high, &gyro.gyro_x_low)) != HAL_OK)
+	if ((status = daq_read_imu_reg(hi2c, L3GD20H_ADDR, L3GD20H_OUT_X_H, L3GD20H_OUT_X_L, &g_gyro.gyro_x_high, &g_gyro.gyro_x_low)) != HAL_OK)
 	{
+		g_gyro.broke = 1;
 		return status;
 	}
 
 	//read the Y registers and write the raw values to the struct's y data point
-
-	if ((status = read_reg(hi2c, L3GD20H_OUT_Y_H, L3GD20H_OUT_Y_L, &gyro.gyro_y_high, &gyro.gyro_y_low)) != HAL_OK)
+	if ((status = daq_read_imu_reg(hi2c, L3GD20H_ADDR, L3GD20H_OUT_Y_H, L3GD20H_OUT_Y_L, &g_gyro.gyro_y_high, &g_gyro.gyro_y_low)) != HAL_OK)
 	{
+		g_gyro.broke = 1;
 		return status;
 	}
 
 	//read the Z registers and write the raw values to the struct's z data point
-
-	if ((status = read_reg(hi2c, L3GD20H_OUT_Z_H, L3GD20H_OUT_Z_L, &gyro.gyro_z_high, &gyro.gyro_z_low)) != HAL_OK)
+	if ((status = daq_read_imu_reg(hi2c, L3GD20H_ADDR, L3GD20H_OUT_Z_H, L3GD20H_OUT_Z_L, &g_gyro.gyro_z_high, &g_gyro.gyro_z_low)) != HAL_OK)
 	{
+		g_gyro.broke = 1;
 		return status;
 	}
 
@@ -129,7 +135,7 @@ HAL_StatusTypeDef read_gyro(I2C_HandleTypeDef *hi2c)
 }
 
 
-/*static HAL_StatusTypeDef read_reg	(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, int16_t *output)	-- reads the 2 data registers and puts the raw value into output
+/*static HAL_StatusTypeDef read_gyro_reg	(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, int16_t *output)	-- reads the 2 data registers and puts the raw value into output
  *
  * NOTE: REGISTERS ARE LITTLE ENDIAN, THEREFORE THE HIGH REGISTER IS THE MSB AND LOW REGISTER IS LSB
  *
@@ -140,24 +146,24 @@ HAL_StatusTypeDef read_gyro(I2C_HandleTypeDef *hi2c)
  *retvalue: HAL_StatusTypeDef	--returns HAL_OK if no errors
  **/
 
-static HAL_StatusTypeDef read_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *out_high, uint8_t *out_low)
-{
-	HAL_StatusTypeDef status;
-	//if there was an error reading the high storage address, set output to -10000 and return the error
-
-	if ((status = HAL_I2C_Mem_Read(hi2c, L3GD20H_ADDR, addr_high, 1, out_high, 1, 100)) != HAL_OK)
-	{
-		return status;
-	}
-	//left shift the data and OR with the data from the high register
-
-	//if there was an error reading the low storage address, set output to -10000 and return the error
-
-	if ((status = HAL_I2C_Mem_Read(hi2c, L3GD20H_ADDR, addr_low, 1, out_low, 1, 100)) != HAL_OK)
-	{
-		return status;
-	}
-	//OR the MSB with the data read from the register
-	return HAL_OK;
-}
+//static HAL_StatusTypeDef read_gyro_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *out_high, uint8_t *out_low)
+//{
+//	HAL_StatusTypeDef status;
+//	//if there was an error reading the high storage address, set output to -10000 and return the error
+//
+//	if ((status = HAL_I2C_Mem_Read(hi2c, L3GD20H_ADDR, addr_high, 1, out_high, 1, 100)) != HAL_OK)
+//	{
+//		return status;
+//	}
+//	//left shift the data and OR with the data from the high register
+//
+//	//if there was an error reading the low storage address, set output to -10000 and return the error
+//
+//	if ((status = HAL_I2C_Mem_Read(hi2c, L3GD20H_ADDR, addr_low, 1, out_low, 1, 100)) != HAL_OK)
+//	{
+//		return status;
+//	}
+//	//OR the MSB with the data read from the register
+//	return HAL_OK;
+//}
 

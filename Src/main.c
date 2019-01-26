@@ -10,7 +10,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * COPYRIGHT(c) 2018 STMicroelectronics
+  * COPYRIGHT(c) 2019 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -60,8 +60,9 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-//IMU_TypeDef imu;
 DAQ_TypeDef daq;
+L3GD20H_GYRO g_gyro;
+ACCEL_LSM303D g_accel;
 /* Private variables ---------------------------------------------------------*/
 //IMU_TypeDef imu;
 /* USER CODE END PV */
@@ -91,7 +92,8 @@ float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out = 0;
   *
   * @retval None
   */
-int main(void) {
+int main(void)
+{
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -120,6 +122,7 @@ int main(void) {
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
 
+  // TODO: Figure out error modes
 //  if the devices were not intitialized properly, then loop and blink led forever
   if (daq_init(&hi2c1, &hadc1, &hcan1, &daq) != DAQ_OK)
 
