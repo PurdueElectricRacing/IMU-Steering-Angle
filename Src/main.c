@@ -33,7 +33,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define DEBUG
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
