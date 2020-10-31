@@ -204,7 +204,4 @@ HAL_StatusTypeDef read_accel(I2C_HandleTypeDef *hi2c);
 
 HAL_StatusTypeDef read_mag(I2C_HandleTypeDef *hi2c);
 
-static HAL_StatusTypeDef read_accel_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low);
-
-
 #endif

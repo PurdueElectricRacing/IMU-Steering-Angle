@@ -5,6 +5,7 @@
  *      Author: Chris
  */
 #include "lsm303d.h"
+#include "daq.h"
 
 extern ACCEL_LSM303D g_accel;		//global accelerometer struct
 
@@ -91,35 +92,6 @@ HAL_StatusTypeDef accel_init(I2C_HandleTypeDef *hi2c, ACCEL_DATA_RATE data_rate,
 }
 
 
-
-///*static HAL_StatusTypeDef read_accel_reg	(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, int16_t *output)	-- reads the 2 data registers and puts the raw value into output
-// *
-// * NOTE: REGISTERS ARE LITTLE ENDIAN, THEREFORE THE HIGH REGISTER IS THE MSB AND LOW REGISTER IS LSB
-// *
-// *I2C_HandleTypeDef *hi2c		-- I2C pointer
-// *uint8_t addr_high				-- address of the high output register
-// *uint8_t addr_low				-- address of the low output register
-// *int16_t *output				-- pointer to the raw data output value
-// *retvalue: HAL_StatusTypeDef		--returns HAL_OK if no errors
-// **/
-//
-//static HAL_StatusTypeDef read_accel_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *out_high, uint8_t *out_low)
-//{
-//	HAL_StatusTypeDef status;
-//
-//	//read the low register for the axis, return status if error
-//	if ((status = HAL_I2C_Mem_Read(hi2c, LSM303D_ADDR, addr_low,  1, out_low,  1, 10)) != HAL_OK)
-//	{
-//		return status;
-//	}
-//	//read the high register for the axis, return status if error
-//	if ((status = HAL_I2C_Mem_Read(hi2c, LSM303D_ADDR, addr_high, 1, out_high, 1, 10)) != HAL_OK)
-//	{
-//		return status;
-//	}
-//
-//	return HAL_OK;
-//}
 
 /*Read the acceleration data for each axis and put that value into the struct's storage values
  * I2C_HandleTypeDef *hi2c -- pointer to i2c HandleTypeDef

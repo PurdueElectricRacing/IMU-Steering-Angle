@@ -5,6 +5,7 @@
  *      Author: Chris
  */
 #include "l3gd20h.h"
+#include "daq.h"
 
 extern L3GD20H_GYRO g_gyro;
 
@@ -135,35 +136,4 @@ HAL_StatusTypeDef read_gyro(I2C_HandleTypeDef *hi2c)
 }
 
 
-/*static HAL_StatusTypeDef read_gyro_reg	(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, int16_t *output)	-- reads the 2 data registers and puts the raw value into output
- *
- * NOTE: REGISTERS ARE LITTLE ENDIAN, THEREFORE THE HIGH REGISTER IS THE MSB AND LOW REGISTER IS LSB
- *
- *I2C_HandleTypeDef *hi2c		-- I2C pointer
- *uint8_t addr_high				-- address of the high output register
- *uint8_t addr_low				-- address of the low output register
- *int16_t *output				-- pointer to the raw data output value
- *retvalue: HAL_StatusTypeDef	--returns HAL_OK if no errors
- **/
-
-//static HAL_StatusTypeDef read_gyro_reg(I2C_HandleTypeDef *hi2c, uint8_t addr_high, uint8_t addr_low, uint8_t *out_high, uint8_t *out_low)
-//{
-//	HAL_StatusTypeDef status;
-//	//if there was an error reading the high storage address, set output to -10000 and return the error
-//
-//	if ((status = HAL_I2C_Mem_Read(hi2c, L3GD20H_ADDR, addr_high, 1, out_high, 1, 100)) != HAL_OK)
-//	{
-//		return status;
-//	}
-//	//left shift the data and OR with the data from the high register
-//
-//	//if there was an error reading the low storage address, set output to -10000 and return the error
-//
-//	if ((status = HAL_I2C_Mem_Read(hi2c, L3GD20H_ADDR, addr_low, 1, out_low, 1, 100)) != HAL_OK)
-//	{
-//		return status;
-//	}
-//	//OR the MSB with the data read from the register
-//	return HAL_OK;
-//}
 
