@@ -159,7 +159,7 @@ int main(void)
 			  HAL_Delay(2000);
 		  }
 	  }
-	  HAL_Delay(20);
+	  HAL_Delay(10);
 	  for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
 	  {
 		  if (daq_send_imu_data(&daq, i) != DAQ_OK)
