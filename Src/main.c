@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "lsm303d.h"
 #include "l3gd20h.h"
+#include "temp.h"
 //#include "imu.h"
 #include "daq.h"
 //#include "imu.h"
@@ -77,6 +78,9 @@ static void MX_CAN1_Init(void);
 
 float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out = 0;
 
+uint8_t loop, run;
+uint16_t temp[NUM_TEMP][NUM_CHANNELS];
+
 void update_global_vals()
 {
   x_a_out = g_accel.x_accel;
@@ -88,6 +92,11 @@ void update_global_vals()
   z_g_out = g_gyro.gyro_z_out;
 }
 
+void TIM2_IRQHandler()
+{
+    TIM2->SR &= ~TIM_SR_UIF;                                        // Acknowledge the interrupt
+    run = 1;                                                        // Signal main loop to process
+}
 
 /* USER CODE END 0 */
 
@@ -100,7 +109,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -120,22 +128,21 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
+  //MX_USART2_UART_Init();
   MX_I2C1_Init();
-  MX_CAN1_Init();
+  //MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
 
   // TODO: Figure out error modes
 //  if the devices were not intitialized properly, then loop and blink led forever
-  if (daq_init(&hi2c1, &hcan1, &daq) != DAQ_OK)
-  {
-    Error_Handler();
-  }
+//  if (daq_init(&hi2c1, &hcan1, &daq) != DAQ_OK)
+//  {
+//    Error_Handler();
+//  }
 
-  initCompleteFlash();
+//  initCompleteFlash();
+  tim2Setup();
   /* USER CODE END 2 */
- 
- 
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -146,36 +153,42 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  if (daq_read_data(&daq) != DAQ_OK)
-	  {
-		  while (1)
-		  {
-			  for (uint8_t i = 0; i < 5; i++)
-			  {
-				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-				  HAL_Delay(300);
-			  }
-			  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-			  HAL_Delay(2000);
-		  }
-	  }
-	  HAL_Delay(10);
-	  for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
-	  {
-		  if (daq_send_imu_data(&daq, i) != DAQ_OK)
-		  {
-			  while(1)
-			  {
-				  for (uint8_t i = 0; i < 5; i++)
-				  {
-					  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-					  HAL_Delay(1000);
-				  }
-				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-				  HAL_Delay(2000);
-			  }
-		  }
-	  }
+      if (loop++ % 10 == 0)
+      {
+//          if (daq_read_data(&daq) != DAQ_OK)
+//          {
+//              while (1)
+//              {
+//                  for (uint8_t i = 0; i < 5; i++)
+//                  {
+//                      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+//                      HAL_Delay(300);
+//                  }
+//                  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+//                  HAL_Delay(2000);
+//              }
+//          }
+//
+//          for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
+//          {
+//              if (daq_send_imu_data(&daq, i) != DAQ_OK)
+//              {
+//                  while(1)
+//                  {
+//                      for (uint8_t i = 0; i < 5; i++)
+//                      {
+//                          HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+//                          HAL_Delay(1000);
+//                      }
+//                      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+//                      HAL_Delay(2000);
+//                  }
+//              }
+//          }
+      }
+      acquireTemp(temp);
+      while (!run);
+      run = 0;
   }
 
 #ifdef DEBUG
@@ -194,11 +207,11 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Configure LSE Drive Capability 
+  /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
   __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -216,7 +229,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -236,13 +249,13 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Enable MSI Auto calibration 
+  /** Enable MSI Auto calibration
   */
   HAL_RCCEx_EnableMSIPLLMode();
 }
@@ -312,13 +325,13 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure Analogue filter 
+  /** Configure Analogue filter
   */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure Digital filter 
+  /** Configure Digital filter
   */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
@@ -426,7 +439,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(char *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
