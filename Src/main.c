@@ -96,6 +96,10 @@ void TIM2_IRQHandler()
 {
     TIM2->SR &= ~TIM_SR_UIF;                                        // Acknowledge the interrupt
     run = 1;                                                        // Signal main loop to process
+    if (loop++ > 200)                                               // Wrap when close to 255 to prevent jitter
+    {
+        loop = 0;                                                   // Reset loop value
+    }
 }
 
 /* USER CODE END 0 */
@@ -128,19 +132,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_USART2_UART_Init();
+  MX_USART2_UART_Init();
   MX_I2C1_Init();
-  //MX_CAN1_Init();
+  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
 
   // TODO: Figure out error modes
-//  if the devices were not intitialized properly, then loop and blink led forever
-//  if (daq_init(&hi2c1, &hcan1, &daq) != DAQ_OK)
-//  {
-//    Error_Handler();
-//  }
+  // if the devices were not intitialized properly, then loop and blink led forever
+  if (daq_init(&hi2c1, &hcan1, &daq) != DAQ_OK)
+  {
+    Error_Handler();
+  }
 
-//  initCompleteFlash();
+  initCompleteFlash();
   tim2Setup();
   /* USER CODE END 2 */
 
@@ -155,36 +159,37 @@ int main(void)
 
       if (loop++ % 10 == 0)
       {
-//          if (daq_read_data(&daq) != DAQ_OK)
-//          {
-//              while (1)
-//              {
-//                  for (uint8_t i = 0; i < 5; i++)
-//                  {
-//                      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-//                      HAL_Delay(300);
-//                  }
-//                  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-//                  HAL_Delay(2000);
-//              }
-//          }
-//
-//          for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
-//          {
-//              if (daq_send_imu_data(&daq, i) != DAQ_OK)
-//              {
-//                  while(1)
-//                  {
-//                      for (uint8_t i = 0; i < 5; i++)
-//                      {
-//                          HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-//                          HAL_Delay(1000);
-//                      }
-//                      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-//                      HAL_Delay(2000);
-//                  }
-//              }
-//          }
+          if (daq_read_data(&daq) != DAQ_OK)
+          {
+              while (1)
+              {
+                  for (uint8_t i = 0; i < 5; i++)
+                  {
+                      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+                      HAL_Delay(300);
+                  }
+                  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+                  HAL_Delay(2000);
+              }
+          }
+
+          for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
+          {
+              if (daq_send_imu_data(&daq, i) != DAQ_OK)
+              {
+                  while(1)
+                  {
+                      for (uint8_t i = 0; i < 5; i++)
+                      {
+                          HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+                          HAL_Delay(1000);
+                      }
+                      HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+                      HAL_Delay(2000);
+                  }
+              }
+          }
+          checkTemp(temp, &daq);
       }
       acquireTemp(temp);
       while (!run);

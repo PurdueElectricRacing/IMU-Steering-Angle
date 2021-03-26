@@ -4,6 +4,7 @@
 // Includes
 #include <math.h>
 #include "stm32l4xx_hal.h"
+#include "daq.h"
 
 // Defines
 #define NUM_CHANNELS            16
@@ -29,6 +30,9 @@
 #define READ_REQ_WAIT			200
 #define WRITE_REQ_WAIT			200
 #define ACQUIRE_TEMP_RATE       500
+
+// CAN
+#define ERROR_ADDR              0x103
 
 // Writing
 #define WRITE_MSG_SIZE    		2
@@ -92,6 +96,7 @@ extern I2C_HandleTypeDef hi2c1;
 
 // Prototypes
 void acquireTemp(uint16_t temp[NUM_TEMP][NUM_CHANNELS]);
+void checkTemp(uint16_t temp[NUM_TEMP][NUM_CHANNELS], DAQ_TypeDef* daq);
 void tim2Setup();
 void initLTC();
 

@@ -14,7 +14,7 @@
 #include "main.h"
 
 
-#define IMU_ADDR 0x422;
+#define IMU_ADDR 0x104;
 
 #define ACCEL_DATARATE ACCEL_DR_100_Hz
 #define ACCEL_RANGE		 ACCEL_4G

@@ -16,7 +16,8 @@ const uint8_t channel[NUM_CHANNELS] = {CHANNEL_0, CHANNEL_1,
                                        CHANNEL_12, CHANNEL_13, CHANNEL_14, CHANNEL_15
                                       };
 
-const uint8_t chip[2] = {ID_TEMP_3A, ID_TEMP_3B};
+const uint8_t chip[10] = {ID_TEMP_1A, ID_TEMP_1B, ID_TEMP_2A, ID_TEMP_2B, ID_TEMP_3A,
+                          ID_TEMP_3B, ID_TEMP_4A, ID_TEMP_4B, ID_TEMP_5A, ID_TEMP_5B};
 uint8_t read_byte = 0;
 uint8_t write_data[WRITE_MSG_SIZE + 1];
 
@@ -114,6 +115,60 @@ void tim2Setup()
     TIM2->CR1 |= TIM_CR1_CEN;                                       // Enable the timer
 }
 
+// @funcname: sendErrorFrame
+//
+// @brief: Signals to main that there's a fault in the system
+void sendErrorFrame(DAQ_TypeDef* daq)
+{
+    // Locals
+    uint32_t mailbox;                                               // Mailbox for send
+    uint8_t data[1];                                                // Data for send
+    CAN_TxHeaderTypeDef header;                                     // CAN frame
+
+    header.StdId = ERROR_ADDR;                                      // Send with error ID
+    header.IDE= CAN_ID_STD;                                         // Standard length frame
+    header.RTR = CAN_RTR_DATA;                                      // Data frame
+    header.DLC = 1;                                                 // Send 1 byte
+    header.TransmitGlobalTime = DISABLE;                            // Don't tx time
+
+    data[0] = 0x1;                                                  // Send error
+
+    while (HAL_CAN_GetTxMailboxesFreeLevel(daq->hcan) == 0);        // I hate this line, but fair enough
+
+    HAL_CAN_AddTxMessage(daq->hcan, &header, data, &mailbox);       // Send frame
+}
+
+// @funcname: checkTemp
+//
+// @brief: Checks given temperature values for rules compliance
+//
+// @exec_period: 10Hz or every 100 ms
+void checkTemp(uint16_t temp[NUM_TEMP][NUM_CHANNELS], DAQ_TypeDef* daq)
+{
+    // Locals
+    uint8_t i, j;                                                   // Generic loop counter vars
+
+    /*
+     * We have some cells that might be reading a bit too high all the time.
+     * In order to combat this, we have a plausibility check in place.
+     * The rules state we need to turn the car off if the temp of a cell
+     * exceeds 60° C. If we check that the temp is between 60° and 70°, it
+     * will be physically impossible for a cell to jump from < 60° and > 70°
+     * between the span of one measurement. Therefore, this will catch all
+     * errors while masking out bad measurements.
+     */
+    for (i = 0; i < NUM_TEMP; i++)                                  // Loop through each IC
+    {
+        for (j = 0; j < NUM_CHANNELS; j++)                          // Loop through each channel on each IC
+        {
+            if (temp[i][j] > 600 && temp[i][j] < 700)               // Check if 60 < temp < 70
+            {
+                sendErrorFrame(daq);                                // Send error
+            }
+        }
+    }
+}
+
 // @funcname: acquireTemp
 //
 // @brief: Gathers temperature values for all ICs and all channels requested by user
@@ -165,8 +220,7 @@ void acquireTemp(uint16_t temp[NUM_TEMP][NUM_CHANNELS])
 
 		case TEMP_READ:
 		{
-			temp[ic][chan - 1] = readLTCValue(chan - 1, ic);	   								                // Read temperature value from ADC
-			uint16_t new = temp[ic][chan - 1];
+			temp[ic][chan - 1] = readLTCValue(chan - 1, ic);
 			++ic;                                                                                               // Increment ic
 			ic = ic == NUM_TEMP ? 0 : ic;																		// Set ic back to 0 if number of ICs is exceeded
 
