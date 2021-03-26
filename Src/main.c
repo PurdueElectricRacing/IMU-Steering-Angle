@@ -157,7 +157,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-      if (loop++ % 10 == 0)
+      if (loop % 10 == 0)
       {
           if (daq_read_data(&daq) != DAQ_OK)
           {
