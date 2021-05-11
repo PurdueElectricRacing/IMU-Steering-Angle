@@ -9,7 +9,7 @@
 
 extern L3GD20H_GYRO g_gyro;
 
-HAL_StatusTypeDef gyro_init(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, GYRO_FULL_SCALE full_scale, int high_pass_filter)
+HAL_StatusTypeDef gyroInit(I2C_HandleTypeDef *hi2c, GYRO_DATA_RATE data_rate, GYRO_FULL_SCALE full_scale, int high_pass_filter)
 {
 	HAL_StatusTypeDef status;
 

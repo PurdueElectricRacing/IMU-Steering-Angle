@@ -56,48 +56,16 @@ DAQ_Status_TypeDef daq_init(I2C_HandleTypeDef *hi2c, CAN_HandleTypeDef *hcan, DA
 }
 
 
-/*
- * @brief: reads the 2 data registers and puts the raw value into output_high and output_low
- *
- * NOTE: REGISTERS ARE LITTLE ENDIAN, THEREFORE THE HIGH REGISTER IS THE MSB AND LOW REGISTER IS LSB
- *
- * @param I2C_HandleTypeDef *hi2c:  I2C pointer
- * @param uint32_t dev_addr: device address to get data from
- * @param uint8_t addr_high: address of the high output register
- * @param uint8_t addr_low:	 address of the low output register
- * @param int16_t *output:   pointer to the raw data output value
- *
- * @return HAL_StatusTypeDef: returns HAL_OK if no errors
- **/
-HAL_StatusTypeDef daq_read_imu_reg(I2C_HandleTypeDef *hi2c, uint16_t dev_addr, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low)
-{
-
-	HAL_StatusTypeDef status;
-	//if there was an error reading the high storage address, set output to -10000 and return the error
-	if ((status = HAL_I2C_Mem_Read(hi2c, dev_addr, addr_high, 1, output_high, 1, 100)) != HAL_OK)
-	{
-		return status;
-	}
-	//if there was an error reading the low storage address, set output to -10000 and return the error
-	if ((status = HAL_I2C_Mem_Read(hi2c, dev_addr, addr_low, 1, output_low, 1, 100)) != HAL_OK)
-	{
-		return status;
-	}
-	//OR the MSB with the data read from the register
-	return HAL_OK;
-}
-
-
-DAQ_Status_TypeDef daq_read_data(DAQ_TypeDef *daq)
+DAQ_Status_TypeDef daqReadData(DAQ_TypeDef *daq)
 {
 	//read the data from accelerometer, return error if failed
-	if (read_accel(daq->hi2c) != HAL_OK)
+	if (readAccel(daq->hi2c) != HAL_OK)
 	{
 		return ACCEL_ERROR;
 	}
 
 	//read the data from gyro , return error if failed
-	if (read_gyro(daq->hi2c) != HAL_OK)
+	if (readGyro(daq->hi2c) != HAL_OK)
 	{
 		return GYRO_ERROR;
 	}
@@ -125,7 +93,7 @@ DAQ_Status_TypeDef daq_read_data(DAQ_TypeDef *daq)
 }
 
 
-DAQ_Status_TypeDef daq_send_imu_data(DAQ_TypeDef *daq, IMU_Data_TypeDef data_type)
+DAQ_Status_TypeDef daqSendImuData(DAQ_TypeDef *daq, IMU_Data_TypeDef data_type)
 {
 	uint32_t mailbox;
 

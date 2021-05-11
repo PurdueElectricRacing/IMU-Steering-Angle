@@ -1,3 +1,5 @@
+// DEPRECATED
+
 #ifndef LSM303D_H
 #define LSM303D_H
 
@@ -128,7 +130,7 @@ typedef enum ACCEL_FS_t
 	ACCEL_6G  = 0x02,   //conversion = 0.183
 	ACCEL_8G  = 0x03,   //conversion = 0.244
 	ACCEL_16G = 0x04,   //conversion = 0.732
-}ACCEL_FS;
+} ACCEL_FS;
 
 //struct containing all the axes' data values
 typedef struct ACCEL_LSM303D

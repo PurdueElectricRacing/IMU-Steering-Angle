@@ -89,7 +89,7 @@ typedef enum GYRO_DATA_RATE_t
 
 typedef enum GYRO_FULL_SCALE_t
 {
-	FS_245_DPS	  	= 0x00,   //Sensitivity: 8.75  mdps/LSB		DEFUALT
+	FS_245_DPS	  = 0x00,   //Sensitivity: 8.75  mdps/LSB		DEFUALT
 	FS_500_DPS   	= 0x01,   //Sensitivity: 17.50 mdps/LSB
 	FS_2000_DPS  	= 0x02,   //Sensitivity: 70.00 mdps/LSB
 }GYRO_FULL_SCALE;

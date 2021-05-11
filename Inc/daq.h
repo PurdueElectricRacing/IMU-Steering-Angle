@@ -8,15 +8,14 @@
 #ifndef DAQ_H_
 #define DAQ_H_
 
-#include "lsm303d.h"
-#include "l3gd20h.h"
+#include "lsm6ds33.h"
 #include "stm32l4xx_hal.h"
 #include "main.h"
 
 
 #define IMU_ADDR 0x422;
 
-#define ACCEL_DATARATE ACCEL_DR_100_Hz
+#define ACCEL_DATARATE ACCEL_
 #define ACCEL_RANGE		 ACCEL_4G
 #define ACCEL_AA			 AA_50_Hz
 
@@ -25,12 +24,11 @@
 
 typedef struct
 {
-	I2C_HandleTypeDef *hi2c;
 	CAN_HandleTypeDef *hcan;
+	IMU_t imu;
 	uint32_t adc;
 	uint32_t tick;
-
-}DAQ_TypeDef;
+} DAQ_TypeDef;
 
 typedef enum
 {
@@ -40,21 +38,21 @@ typedef enum
 	ADC_ERROR,
 	CAN_ERROR,
 	GENERIC_ERROR,
-}DAQ_Status_TypeDef;
+} DAQ_Status_TypeDef;
 
 typedef enum
 {
 	ACCEL = 0,
 	GYRO = 1,
 	IMU_TYPE_MAX,
-}IMU_Data_TypeDef;
+} IMU_Data_TypeDef;
 
 
 
-DAQ_Status_TypeDef daq_init(I2C_HandleTypeDef *hi2c, CAN_HandleTypeDef *hcan, DAQ_TypeDef *daq);
-DAQ_Status_TypeDef daq_read_data(DAQ_TypeDef *daq);
-DAQ_Status_TypeDef daq_send_imu_data(DAQ_TypeDef *daq, IMU_Data_TypeDef data_type);
-HAL_StatusTypeDef  daq_read_imu_reg(I2C_HandleTypeDef *hi2c, uint16_t dev_addr, uint8_t addr_high, uint8_t addr_low, uint8_t *output_high, uint8_t *output_low);
+DAQ_Status_TypeDef daqInit(I2C_HandleTypeDef *hi2c, CAN_HandleTypeDef *hcan,
+													 DAQ_TypeDef *daq);
+DAQ_Status_TypeDef daqReadData(DAQ_TypeDef *daq);
+DAQ_Status_TypeDef daqSendImuData(DAQ_TypeDef *daq, IMU_Data_TypeDef data_type);
 
 void initCompleteFlash();
 
