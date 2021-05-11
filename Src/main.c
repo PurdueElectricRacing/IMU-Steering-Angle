@@ -23,8 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lsm303d.h"
-#include "l3gd20h.h"
+
 //#include "imu.h"
 #include "daq.h"
 //#include "imu.h"
@@ -55,8 +54,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 DAQ_TypeDef daq;
-L3GD20H_GYRO g_gyro;
-ACCEL_LSM303D g_accel;
+
 /* Private variables ---------------------------------------------------------*/
 //IMU_TypeDef imu;
 /* USER CODE END PV */
@@ -75,17 +73,21 @@ static void MX_CAN1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out = 0;
+float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out;
 
 void update_global_vals()
 {
-  x_a_out = g_accel.x_accel;
-  y_a_out = g_accel.y_accel;
-  z_a_out = g_accel.z_accel;
+  IMU_t * imu = &(daq.imu);
+  ImuSensor * accel = &(imu->accelerometer);
+  ImuSensor * gyro = &(imu->gyro);
 
-  x_g_out = g_gyro.gyro_x_out;
-  y_g_out = g_gyro.gyro_y_out;
-  z_g_out = g_gyro.gyro_z_out;
+  x_a_out = accel->x.value;
+  y_a_out = accel->y.value;
+  z_a_out = accel->z.value;
+
+  x_g_out = gyro->x.value;
+  y_g_out = gyro->y.value;
+  z_g_out = gyro->z.value;
 }
 
 
@@ -127,7 +129,7 @@ int main(void)
 
   // TODO: Figure out error modes
 //  if the devices were not intitialized properly, then loop and blink led forever
-  if (daq_init(&hi2c1, &hcan1, &daq) != DAQ_OK)
+  if (daqInit(&hi2c1, &hcan1, &daq) != DAQ_OK)
   {
     Error_Handler();
   }
@@ -146,7 +148,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  if (daq_read_data(&daq) != DAQ_OK)
+	  if (daqReadData(&daq) != DAQ_OK)
 	  {
 		  while (1)
 		  {
@@ -162,7 +164,7 @@ int main(void)
 	  HAL_Delay(10);
 	  for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
 	  {
-		  if (daq_send_imu_data(&daq, i) != DAQ_OK)
+		  if (daqSendImuData(&daq, i) != DAQ_OK)
 		  {
 			  while(1)
 			  {

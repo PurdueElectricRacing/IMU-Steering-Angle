@@ -1,11 +1,9 @@
 #ifndef __LSM6DS33_H__
 #define __LSM6DS33_H__
 
-#ifndef LSM6DS33_H
-#define LSM6DS33_H
-
 #include "stm32l4xx_hal.h"
 #include "main.h"
+#include "stdbool.h"
 
 #define LSM6DS33_ADDR   		0xD6
 
@@ -98,7 +96,7 @@ typedef enum ACCEL_DATA_RATE_t
 	ACCEL_DR_1660_Hz     = 0x08,
 	ACCEL_DR_3330_Hz     = 0x09,
 	ACCEL_DR_6660_Hz     = 0x0A,
-}ACCEL_DATA_RATE;
+} ACCEL_DATA_RATE;
 
 
 /*Accelerometer anti-alias filter bandwidth
@@ -120,7 +118,7 @@ typedef enum ACCEL_FS_t
 	ACCEL_16G = 0x01,   //conversion = 0.488
 	ACCEL_4G  = 0x02,   //conversion = 0.122		DEFAULT
 	ACCEL_8G  = 0x03,   //conversion = 0.244
-}ACCEL_FS;
+} ACCEL_FS;
 
 
 
@@ -135,7 +133,7 @@ typedef enum GYRO_DATA_RATE_t
 	GYRO_DR_416_Hz      = 0x06,
 	GYRO_DR_833_Hz      = 0x07,
 	GYRO_DR_1660_Hz     = 0x08,
-}GYRO_DATA_RATE;
+} GYRO_DATA_RATE;
 
 //Gyro sensitivity range
 
@@ -145,34 +143,34 @@ typedef enum GYRO_FULL_SCALE_t
 	FS_500_DPS   	= 0x01,   //Sensitivity: 17.50 mdps/LSB
 	FS_1000_DPS  	= 0x02,   //Sensitivity: 35.00 mdps/LSB
 	FS_2000_DPS  	= 0x03,   //Sensitivity: 70.00 mdps/LSB
-}GYRO_FULL_SCALE;
+} GYRO_FULL_SCALE;
 
 
-union AxisData_t
+typedef union axis_data_t
 {
   uint8_t high;
   uint8_t low;
   int16_t value;
-};
+} AxisData_t;
 
 
 
-typedef struct ImuSensor
+typedef struct imu_sensor_t
 {
   AxisData_t x;
   AxisData_t y;
   AxisData_t z;
 
-  float sensitivity;
+  float conversion;
 	uint8_t broke;
-};
+} ImuSensor;
 
-typedef struct IMU_t
+typedef struct IMU
 {
-  I2C_HandleTypeDef * i2c_handle;
+  I2C_HandleTypeDef * i2c;
   ImuSensor accelerometer;
   ImuSensor gyro;
-};
+} IMU_t;
 
 
 /*Initialize the gyroscope
@@ -183,19 +181,12 @@ typedef struct IMU_t
 
 
 HAL_StatusTypeDef imuInit(IMU_t * imu, I2C_HandleTypeDef * hi2c);
-HAL_StatusTypeDef gyroInit(IMU_t * imu, GYRO_DATA_RATE_t data_rate,
-                           GYRO_FULL_SCALE_t full_scale, int high_pass_filter);
-HAL_StatusTypeDef accelInit(IMU_t * imu, ACCEL_DATA_RATE_t dr, 
-                            ACCEL_FS_t full_scale);
+HAL_StatusTypeDef gyroInit(IMU_t * imu, GYRO_DATA_RATE data_rate,
+                           GYRO_FULL_SCALE full_scale, int high_pass_filter);
+HAL_StatusTypeDef accelInit(IMU_t * imu, ACCEL_DATA_RATE dr, 
+                            ACCEL_FS full_scale);
 HAL_StatusTypeDef readGyro(ImuSensor * gyro, I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef readAccel(ImuSensor * accel, I2C_HandleTypeDef *hi2c);
-
-// TODO write this 
-HAL_StatusTypeDef orientImu(bool x_sign, bool y_sign, bool z_sign, 
-                            uint8_t orientation);
-
-
-#endif
 
 
 #endif

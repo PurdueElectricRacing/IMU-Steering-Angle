@@ -15,12 +15,6 @@
 
 #define IMU_ADDR 0x422;
 
-#define ACCEL_DATARATE ACCEL_
-#define ACCEL_RANGE		 ACCEL_4G
-#define ACCEL_AA			 AA_50_Hz
-
-#define GYRO_DATARATE GYRO_DR_100_Hz
-#define GYRO_RANGE    FS_245_DPS
 
 typedef struct
 {
@@ -33,6 +27,7 @@ typedef struct
 typedef enum
 {
 	DAQ_OK,
+	IMU_ERROR,
 	ACCEL_ERROR,
 	GYRO_ERROR,
 	ADC_ERROR,
