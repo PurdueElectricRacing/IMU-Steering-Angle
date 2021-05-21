@@ -146,11 +146,10 @@ typedef enum GYRO_FULL_SCALE_t
 } GYRO_FULL_SCALE;
 
 
-typedef union axis_data_t
+typedef struct axis_data_t
 {
   uint8_t high;
   uint8_t low;
-  int16_t value;
 } AxisData_t;
 
 

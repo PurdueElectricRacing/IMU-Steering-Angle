@@ -27,20 +27,20 @@
  * @return HAL_StatusTypeDef: returns HAL_OK if no errors
  **/
 static HAL_StatusTypeDef readImuReg(I2C_HandleTypeDef * hi2c, uint16_t dev_addr,
-                                 uint8_t addr_high, uint8_t addr_low, 
-                                 AxisData_t * output)
+                                    uint8_t addr_high, uint8_t addr_low, 
+                                    AxisData_t * output)
 {
 
 	HAL_StatusTypeDef status;
 
 	if ((status = HAL_I2C_Mem_Read(hi2c, dev_addr, addr_high, 1,
-                                 output->high, 1, 100)) != HAL_OK)
+                                 &(output->high), 1, 100)) != HAL_OK)
 	{
 		return status;
 	}
 
 	if ((status = HAL_I2C_Mem_Read(hi2c, dev_addr, addr_low, 1,
-                                 output->low, 1, 100)) != HAL_OK)
+                                 &(output->low), 1, 100)) != HAL_OK)
 	{
 		return status;
 	}
@@ -98,17 +98,15 @@ HAL_StatusTypeDef gyroInit(IMU_t * imu, GYRO_DATA_RATE data_rate,
   uint8_t init = data_rate << 4 | full_scale << 2;
 	/*Write to Gyro CTRL2
 	 * Set bandwidth to max speed, enable XYZ axes, and enable Normal Mode*/
-
-	if ((status = HAL_I2C_Mem_Write(imu->i2c, LSM6DS33_ADDR, CTRL2_G, 1,
-                                  &init, 1, 100)) != HAL_OK)
+	status = HAL_I2C_Mem_Write(imu->i2c, LSM6DS33_ADDR, CTRL2_G, 1, &init, 1, 100);
+	if (status != HAL_OK)
 	{
 		gyro->broke = 1;
 		return status;
 	}
 
 
-	/*If the high_pass_filter flag is set, then write to CTRL7 to enable it;
-	 * */
+	// If the high_pass_filter flag is set, then write to CTRL7 to enable it;
 
 	if (high_pass_filter)
 	{
@@ -178,17 +176,17 @@ HAL_StatusTypeDef accelInit(IMU_t * imu, ACCEL_DATA_RATE data_rate,
 	switch (full_scale)
 	{
 	  case(ACCEL_2G):
-				accel->conversion = 0.061;
-				break;
+			accel->conversion = 0.061;
+			break;
 		case(ACCEL_4G):
-				accel->conversion = 0.122;
-				break;
+			accel->conversion = 0.122;
+			break;
 		case(ACCEL_8G):
-				accel->conversion = 0.244;
-				break;
+			accel->conversion = 0.244;
+			break;
 		case(ACCEL_16G):
-				accel->conversion = 0.488;
-				break;
+			accel->conversion = 0.488;
+			break;
 		default:
 			accel->conversion = 0.122;
 			break;
@@ -199,8 +197,8 @@ HAL_StatusTypeDef accelInit(IMU_t * imu, ACCEL_DATA_RATE data_rate,
 
   // init CTRL 1
 	uint8_t init = data_rate << 4 | full_scale << 2;
-	init |= 0x07;
-	if ((status = HAL_I2C_Mem_Write(imu->i2c, LSM6DS33_ADDR, CTRL1_XL, 1, &init, 1, 10) != HAL_OK))
+	status = HAL_I2C_Mem_Write(imu->i2c, LSM6DS33_ADDR, CTRL1_XL, 1, &init, 1, 10);
+	if (status != HAL_OK)
 	{
 		accel->broke = 1;
 		return status;
@@ -268,7 +266,7 @@ HAL_StatusTypeDef imuInit(IMU_t * imu, I2C_HandleTypeDef * hi2c)
   }
 
   // TODO figure out the orientations
-  orientImu(hi2c, X_SIGN, Y_SIGN, Z_SIGN, ORIENTATION);
+  // orientImu(hi2c, X_SIGN, Y_SIGN, Z_SIGN, ORIENTATION);
 
   return HAL_OK;
 }

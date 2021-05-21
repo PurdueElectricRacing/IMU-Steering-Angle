@@ -24,9 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-//#include "imu.h"
 #include "daq.h"
-//#include "imu.h"
 
 /* USER CODE END Includes */
 
@@ -56,7 +54,7 @@ UART_HandleTypeDef huart2;
 DAQ_TypeDef daq;
 
 /* Private variables ---------------------------------------------------------*/
-//IMU_TypeDef imu;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,7 +71,12 @@ static void MX_CAN1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+#ifdef DEBUG
+
 float x_a_out, y_a_out, z_a_out, x_g_out, y_g_out, z_g_out;
+
+#define FROM_LIL_16(msb, lsb) (msb << 8 | lsb)
 
 void update_global_vals()
 {
@@ -81,15 +84,21 @@ void update_global_vals()
   ImuSensor * accel = &(imu->accelerometer);
   ImuSensor * gyro = &(imu->gyro);
 
-  x_a_out = accel->x.value;
-  y_a_out = accel->y.value;
-  z_a_out = accel->z.value;
-
-  x_g_out = gyro->x.value;
-  y_g_out = gyro->y.value;
-  z_g_out = gyro->z.value;
+  x_a_out = (float)((int16_t) FROM_LIL_16(accel->x.high, accel->x.low)) 
+            * accel->conversion;
+  y_a_out = (float)((int16_t) FROM_LIL_16(accel->y.high, accel->x.low)) 
+            * accel->conversion;
+  z_a_out = (float)((int16_t) FROM_LIL_16(accel->z.high, accel->z.low)) 
+            * accel->conversion;
+            
+  x_g_out = (float)((int16_t) FROM_LIL_16(gyro->x.high, gyro->x.low)) 
+            * gyro->conversion;
+  y_g_out = (float)((int16_t) FROM_LIL_16(gyro->y.high, gyro->y.low)) 
+            * gyro->conversion;
+  z_g_out = (float)((int16_t) FROM_LIL_16(gyro->z.high, gyro->z.low)) 
+            * gyro->conversion;
 }
-
+#endif
 
 /* USER CODE END 0 */
 
@@ -178,11 +187,14 @@ int main(void)
 			  }
 		  }
 	  }
-  }
 
 #ifdef DEBUG
-  update_global_variables();
+	  update_global_vals();
 #endif
+  }
+
+
+
   /* USER CODE END 3 */
 }
 
