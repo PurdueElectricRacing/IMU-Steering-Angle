@@ -20,12 +20,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "psched.h"
+#include "psched.c"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 #include "daq.h"
-
+void getData();
+void sendData();
+void errorHandler();
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,6 +76,8 @@ static void MX_CAN1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+/* Definitions for defaultTask */
+
 
 #ifdef DEBUG
 
@@ -111,7 +118,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -119,7 +125,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -135,57 +140,31 @@ int main(void)
   MX_I2C1_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
-
   // TODO: Figure out error modes
 //  if the devices were not intitialized properly, then loop and blink led forever
   if (daqInit(&hi2c1, &hcan1, &daq) != DAQ_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
 
   initCompleteFlash();
+  schedInit(32000000);
+  taskCreate(getData,1000);
+  taskCreate(sendData,1000);
+  schedStart();
+
+
+
+
+
   /* USER CODE END 2 */
- 
- 
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
 
-    /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-
-	  if (daqReadData(&daq) != DAQ_OK)
-	  {
-		  while (1)
-		  {
-			  for (uint8_t i = 0; i < 5; i++)
-			  {
-				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-				  HAL_Delay(300);
-			  }
-			  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-			  HAL_Delay(2000);
-		  }
-	  }
-	  HAL_Delay(10);
-	  for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
-	  {
-		  if (daqSendImuData(&daq, i) != DAQ_OK)
-		  {
-			  while(1)
-			  {
-				  for (uint8_t i = 0; i < 5; i++)
-				  {
-					  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-					  HAL_Delay(1000);
-				  }
-				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-				  HAL_Delay(2000);
-			  }
-		  }
 	  }
 
 #ifdef DEBUG
@@ -196,7 +175,7 @@ int main(void)
 
 
   /* USER CODE END 3 */
-}
+
 
 /**
   * @brief System Clock Configuration
@@ -208,11 +187,11 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Configure LSE Drive Capability 
+  /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
   __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -228,9 +207,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -241,22 +220,22 @@ void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
-  /** Enable MSI Auto calibration 
+  /** Enable MSI Auto calibration
   */
   HAL_RCCEx_EnableMSIPLLMode();
 }
@@ -266,6 +245,8 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
+
+
 static void MX_CAN1_Init(void)
 {
 
@@ -290,7 +271,7 @@ static void MX_CAN1_Init(void)
   hcan1.Init.TransmitFifoPriority = DISABLE;
   if (HAL_CAN_Init(&hcan1) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
   /* USER CODE BEGIN CAN1_Init 2 */
 
@@ -324,19 +305,19 @@ static void MX_I2C1_Init(void)
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
-  /** Configure Analogue filter 
+  /** Configure Analogue filter
   */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
-  /** Configure Digital filter 
+  /** Configure Digital filter
   */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
 
@@ -371,7 +352,7 @@ static void MX_USART2_UART_Init(void)
   huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
   if (HAL_UART_Init(&huart2) != HAL_OK)
   {
-    Error_Handler();
+    //Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
 
@@ -419,18 +400,39 @@ static void MX_GPIO_Init(void)
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
-void Error_Handler(void)
+
+void getData(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  while(1)
-  {
-    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-    HAL_Delay(1000);
-  }
-  /* USER CODE END Error_Handler_Debug */
+	if (daqReadData(&daq) != DAQ_OK)
+	{
+		taskDelete(0,0);
+		taskDelete(0,0);
+		schedInit(32000000);
+		taskCreate(errorHandler, 500);
+		schedStart();
+	}
 }
 
+void sendData(void)
+{
+	for (IMU_Data_TypeDef i = 0; i < IMU_TYPE_MAX; i++)
+	{
+		if (daqSendImuData(&daq, i) != DAQ_OK)
+		{
+			taskDelete(0,0);
+			taskDelete(0,0);
+			taskCreate(errorHandler, 500);
+			schedStart();
+		}
+	}
+}
+
+void errorHandler(void)
+{
+	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+
+
+}
 #ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
@@ -440,7 +442,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(char *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

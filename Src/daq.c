@@ -20,8 +20,8 @@ void initCompleteFlash()
   HAL_Delay(500);
   for (int i = 0; i < 6; i++)
   {
-    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-    HAL_Delay(150);
+    //HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+    //HAL_Delay(150);
   }
 }
 
